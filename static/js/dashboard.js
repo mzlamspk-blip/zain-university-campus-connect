@@ -1,0 +1,2 @@
+// Shared dashboard helpers can be added here as the campus portal grows.
+document.addEventListener("DOMContentLoaded",()=>{document.querySelectorAll("[data-confirm]").forEach(el=>el.addEventListener("click",e=>{if(!confirm(el.dataset.confirm))e.preventDefault()}))});

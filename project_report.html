@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Zain University – Campus Connect | Project Report</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body { font-family: "Segoe UI", Arial, sans-serif; color: #1f2430; margin: 0; font-size: 11.5px; line-height: 1.55; }
+  .cover { text-align: center; padding: 60px 20px 40px; border-bottom: 4px solid #4f46e5; }
+  .brand { display: inline-block; background: #4f46e5; color: #fff; font-weight: 700; width: 54px; height: 54px; line-height: 54px; border-radius: 14px; font-size: 26px; }
+  h1 { font-size: 30px; margin: 18px 0 6px; color: #1e1b4b; }
+  .subtitle { color: #4f46e5; font-weight: 600; font-size: 15px; }
+  .meta { color: #6b7280; margin-top: 14px; font-size: 11px; }
+  h2 { font-size: 17px; color: #1e1b4b; border-left: 5px solid #4f46e5; padding-left: 10px; margin: 28px 0 10px; page-break-after: avoid; }
+  h3 { font-size: 13px; color: #312e81; margin: 16px 0 6px; page-break-after: avoid; }
+  p { margin: 6px 0; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 14px; page-break-inside: avoid; }
+  th, td { border: 1px solid #d7d9e4; padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: #eef2ff; color: #312e81; font-size: 11px; }
+  tr:nth-child(even) td { background: #fafbff; }
+  code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 10.5px; background: #f1f2f8; padding: 1px 4px; border-radius: 4px; }
+  .ok { color: #047857; font-weight: 700; }
+  .bad { color: #b91c1c; font-weight: 700; }
+  .badge { display: inline-block; background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; border-radius: 999px; padding: 2px 10px; margin: 2px 4px 2px 0; font-size: 10.5px; }
+  .grid { display: flex; gap: 12px; flex-wrap: wrap; }
+  .card { flex: 1 1 200px; background: #f8f9ff; border: 1px solid #e2e5f5; border-radius: 10px; padding: 10px 12px; }
+  .card b { color: #312e81; }
+  .note { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; padding: 8px 10px; margin: 10px 0; }
+  .footer { margin-top: 30px; padding-top: 10px; border-top: 1px solid #d7d9e4; color: #6b7280; font-size: 10px; text-align: center; }
+  ul { margin: 6px 0; padding-left: 18px; }
+  li { margin: 3px 0; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="brand">Z</div>
+  <h1>Zain University – Campus Connect</h1>
+  <div class="subtitle">Project Report: Analysis, Fixes, Technology Stack &amp; Verification</div>
+  <div class="meta">Flask + MySQL University Campus Portal &nbsp;·&nbsp; Report generated: 20 November 2026</div>
+</div>
+
+<h2>1. What this project is</h2>
+<p><b>Campus Connect</b> is a web portal for a university campus that lets students report problems, find lost items,
+join campus events and take part in moderated discussions, while administrators manage students, moderate content,
+respond to complaints and view analytics.</p>
+<div class="grid">
+  <div class="card"><b>Student portal</b><br>Registration/login, complaints with images, Lost &amp; Found, events,
+    discussions with likes/upvotes/comments, profile &amp; password change, notifications.</div>
+  <div class="card"><b>Admin portal</b><br>Dashboard with statistics, complaint responses, student activate/deactivate,
+    post moderation &amp; report review, event management, analytics charts, settings.</div>
+  <div class="card"><b>Public site</b><br>Landing page with features, about section and the next 3 upcoming events,
+    plus a <span class="mono">/health</span> database status endpoint.</div>
+</div>
+
+<h2>2. What happened in this project (work performed)</h2>
+<table>
+  <tr><th style="width:26%">Stage</th><th>What was done</th></tr>
+  <tr><td><b>1. Analysis</b></td>
+      <td>Read every source file (<span class="mono">app.py</span>, <span class="mono">config.py</span>, <span class="mono">database.sql</span>,
+      all 21 templates, CSS/JS, README) and reviewed architecture, security, data model and code quality.</td></tr>
+  <tr><td><b>2. Error diagnosis</b></td>
+      <td>Set up the environment (Python 3.13 virtual environment, MySQL 8 service), created the missing database,
+      and reproduced runtime failures with an automated smoke test.</td></tr>
+  <tr><td><b>3. Fixing</b></td>
+      <td>Corrected every runtime error and the security/functional issues found in the analysis (table 3 below).</td></tr>
+  <tr><td><b>4. Verification</b></td>
+      <td>43 automated checks + a live browser login test with real CSRF tokens. <span class="ok">All passed, 0 errors.</span></td></tr>
+  <tr><td><b>5. Delivery</b></td>
+      <td>Packaged the clean project as <span class="mono">zain-university-final.zip</span> and produced this PDF report.</td></tr>
+</table>
+
+<h2>3. Errors found and how they were resolved</h2>
+<table>
+  <tr><th style="width:6%">#</th><th style="width:30%">Error / problem</th><th>Solution applied</th></tr>
+  <tr><td>1</td><td><span class="bad">Unknown database 'zain_university'</span> – the app could not start</td>
+      <td>Created the database and all 12 tables from <span class="mono">database.sql</span>.</td></tr>
+  <tr><td>2</td><td><span class="bad">MySQL 1055 ONLY_FULL_GROUP_BY</span> – admin dashboard/analytics returned HTTP 500</td>
+      <td>Rewrote the monthly-complaint and student-registration queries to group by the selected expressions.</td></tr>
+  <tr><td>3</td><td><span class="bad">CSRF session token missing</span> (HTTP 400)</td>
+      <td>All forms verified to carry the hidden token; empty-field login now shows a clear message; a friendly 400
+      page explains that the form session expired and asks the user to reload.</td></tr>
+  <tr><td>4</td><td><span class="bad">Connection refused</span> in the browser</td>
+      <td>Transient – the server was being restarted to apply a fix. Verified <span class="mono">/health</span> returns
+      <span class="mono">200 {"database":"connected"}</span> after restart.</td></tr>
+  <tr><td>5</td><td><span class="bad">"Invalid login details"</span> with empty fields</td>
+      <td>Login now validates empty username/password first; portal selection (Student/Admin) must match the account.</td></tr>
+  <tr><td>6</td><td>Weak default <span class="mono">FLASK_SECRET_KEY</span> ("dev-only-change-this-secret")</td>
+      <td>Rotated to a 64-character random key; the app now auto-generates a strong key if the configured one is missing or weak.</td></tr>
+  <tr><td>7</td><td><span class="bad">Debug mode ON</span> (<span class="mono">app.run(debug=True)</span>) – debugger can allow remote code execution</td>
+      <td>Debug is off by default; <span class="mono">FLASK_DEBUG=1</span> opts in for local development only.</td></tr>
+  <tr><td>8</td><td>Deactivated students could keep using an open session</td>
+      <td><span class="mono">login_required()</span> now re-checks the account in the database on every request, so deactivation is immediate.</td></tr>
+  <tr><td>9</td><td>Uploaded images were public in <span class="mono">static/uploads/</span> and only checked by file extension</td>
+      <td>Moved uploads to <span class="mono">uploads/</span> (outside static), added file-signature (magic byte) validation,
+      random UUID filenames, and an authenticated <span class="mono">/media/&lt;file&gt;</span> route that only lets the
+      owner or an admin view an image. Event banners stay public via <span class="mono">/media/events/&lt;file&gt;</span>.</td></tr>
+  <tr><td>10</td><td>Post "report" silently hid any post (abuse possible) and had dead code</td>
+      <td>New <span class="mono">post_reports</span> table with one report per student per post, a reason field, an admin
+      review page with Take-down / Dismiss actions, and no automatic un-approval.</td></tr>
+  <tr><td>11</td><td>No brute-force protection; unvalidated e-mail at registration</td>
+      <td>Login throttling (5 failures per 10 minutes per IP+identity) and <span class="mono">email-validator</span> on registration.</td></tr>
+  <tr><td>12</td><td>State-changing GET routes (<span class="mono">/logout</span>, <span class="mono">/notifications</span>)</td>
+      <td>Both converted to CSRF-protected POST forms.</td></tr>
+  <tr><td>13</td><td>Admin account only created when running <span class="mono">python app.py</span></td>
+      <td>Bootstrap moved to import time, so WSGI deployments also create the configured admin (idempotent).</td></tr>
+  <tr><td>14</td><td>Lost &amp; Found exposed every student's e-mail address passively</td>
+      <td>E-mail is now revealed only through an explicit "Show contact" action.</td></tr>
+  <tr><td>15</td><td>Orphaned upload files, unsafe <span class="mono">LIKE</span> wildcards, deprecated <span class="mono">utcnow()</span>, duplicate student IDs</td>
+      <td>Uploads deleted with their records, search terms escaped, UTC date code removed, unique student-ID column added.</td></tr>
+</table>
+
+<h2>4. Technology stack – which software is used and where</h2>
+<table>
+  <tr><th style="width:24%">Software / library</th><th style="width:16%">Version</th><th>Where it is used in this project</th></tr>
+  <tr><td><b>Python</b></td><td>3.13.7</td><td>The programming language for the whole backend; runs inside the project's <span class="mono">.venv</span> virtual environment.</td></tr>
+  <tr><td><b>Flask</b></td><td>3.1.0</td><td>Web framework – every route in <span class="mono">app.py</span> (40 routes: auth, complaints, events, discussions, admin, media, health).</td></tr>
+  <tr><td><b>Flask-WTF / WTForms</b></td><td>1.2.2</td><td>CSRF protection (<span class="mono">CSRFProtect</span>) on every form in the templates.</td></tr>
+  <tr><td><b>mysql-connector-python</b></td><td>9.1.0</td><td>All database access – the <span class="mono">db()</span> and <span class="mono">query()</span> helpers in <span class="mono">app.py</span>.</td></tr>
+  <tr><td><b>MySQL Server</b></td><td>8.0 (service <span class="mono">MySQL80</span>)</td><td>Stores all data: 12 tables defined in <span class="mono">database.sql</span> (students, admins, complaints, events, posts, etc.). Listens on 127.0.0.1:3306.</td></tr>
+  <tr><td><b>Werkzeug</b></td><td>3.1.9</td><td>Password hashing (<span class="mono">generate_password_hash</span>/<span class="mono">check_password_hash</span>) and safe upload filenames.</td></tr>
+  <tr><td><b>python-dotenv</b></td><td>1.0.1</td><td>Loads configuration from <span class="mono">.env</span> in <span class="mono">config.py</span> (DB credentials, admin account, secret key).</td></tr>
+  <tr><td><b>email-validator</b></td><td>2.2.0</td><td>Validates and normalises e-mail addresses in the <span class="mono">/register</span> route.</td></tr>
+  <tr><td><b>Jinja2</b></td><td>3.1.6</td><td>Server-side HTML templating – all 21 files in <span class="mono">templates/</span>.</td></tr>
+  <tr><td><b>Bootstrap 5 + Bootstrap Icons</b></td><td>5.3.3 / 1.11.3</td><td>Page layout, buttons, forms, tables and icons in every template (loaded from the jsDelivr CDN in <span class="mono">base.html</span>).</td></tr>
+  <tr><td><b>Chart.js</b></td><td>latest CDN</td><td>The five analytics charts on <span class="mono">/admin/analytics</span> (status, monthly, department, event participation, registrations).</td></tr>
+  <tr><td><b>Custom CSS</b></td><td>2 files</td><td><span class="mono">static/css/style.css</span> (landing/theme) and <span class="mono">static/css/dashboard.css</span> (dashboards, panels, status badges).</td></tr>
+  <tr><td><b>Custom JavaScript</b></td><td>1 file</td><td><span class="mono">static/js/main.js</span> – light/dark theme toggle persisted in <span class="mono">localStorage</span>.</td></tr>
+  <tr><td><b>Virtual environment (.venv)</b></td><td>pip 25.2</td><td>Isolates all installed packages for this project; activated before running the app.</td></tr>
+  <tr><td><b>VS Code</b> (recommended editor)</td><td>—</td><td>Editing and running the project per the README setup guide.</td></tr>
+  <tr><td><b>Git / ZIP delivery</b></td><td>—</td><td>Final project delivered as <span class="mono">zain-university-final.zip</span> (secrets excluded).</td></tr>
+</table>
+
+<h2>5. Project file structure</h2>
+<table>
+  <tr><th style="width:32%">File / folder</th><th>Purpose</th></tr>
+  <tr><td><span class="mono">app.py</span></td><td>All application logic and routes (auth, complaints, lost &amp; found, events, discussions, admin, media, health).</td></tr>
+  <tr><td><span class="mono">config.py</span></td><td>Loads <span class="mono">.env</span>; defines DB settings, secret key, upload folder, session cookie security.</td></tr>
+  <tr><td><span class="mono">database.sql</span></td><td>Creates the <span class="mono">zain_university</span> database and all 12 tables with indexes and foreign keys.</td></tr>
+  <tr><td><span class="mono">requirements.txt</span></td><td>Pinned Python dependencies for <span class="mono">pip install -r</span>.</td></tr>
+  <tr><td><span class="mono">.env / .env.example</span></td><td>Secret configuration (DB password, admin account, Flask key). <span class="bad">.env is excluded from the ZIP</span>.</td></tr>
+  <tr><td><span class="mono">templates/</span></td><td>21 Jinja templates: public pages, student pages, admin pages, error pages.</td></tr>
+  <tr><td><span class="mono">static/css, static/js, static/images</span></td><td>Stylesheets, theme script and static images.</td></tr>
+  <tr><td><span class="mono">uploads/</span></td><td>Private image storage served only through the authenticated media routes.</td></tr>
+  <tr><td><span class="mono">smoke_test.py</span></td><td>43-check automated test that proves the application works end to end.</td></tr>
+  <tr><td><span class="mono">README.md</span></td><td>Setup, routes, security and troubleshooting documentation.</td></tr>
+</table>
+
+<h2>6. Verification result (final state)</h2>
+<div class="grid">
+  <div class="card"><b>43 / 43</b><br>automated smoke-test checks passed</div>
+  <div class="card"><b>0</b><br>errors in code compile, templates and server logs</div>
+  <div class="card"><b>200 OK</b><br><span class="mono">/health</span> → database connected</div>
+  <div class="card"><b>40</b><br>routes registered and smoke-tested</div>
+</div>
+<p>Covered by the tests: landing/health/login/register pages, invalid e-mail rejection, student registration and login,
+every student page, fake-image rejection, real image upload + owner-only media access, notification read, role
+enforcement (403), logout, second-student access denial, admin login, all 8 admin pages, public event banner,
+event creation/deletion with upload clean-up, and immediate blocking of a deactivated student.</p>
+
+<h2>7. How to run the final project</h2>
+<ol>
+  <li>Extract <span class="mono">zain-university-final.zip</span> and open the folder in VS Code.</li>
+  <li>Create/activate the virtual environment: <span class="mono">python -m venv .venv</span> then
+      <span class="mono">.\.venv\Scripts\Activate.ps1</span>.</li>
+  <li>Install packages: <span class="mono">pip install -r requirements.txt</span>.</li>
+  <li>Run <span class="mono">database.sql</span> in MySQL Workbench (or <span class="mono">mysql -u root -p &lt; database.sql</span>).</li>
+  <li>Copy <span class="mono">.env.example</span> to <span class="mono">.env</span> and fill in MySQL credentials, admin
+      account and a long random <span class="mono">FLASK_SECRET_KEY</span>.</li>
+  <li>Start the site: <span class="mono">python app.py</span> → open <span class="mono">http://127.0.0.1:5000</span>.</li>
+  <li>Optional: run <span class="mono">python smoke_test.py</span> to re-verify all 43 checks.</li>
+</ol>
+<div class="note"><b>Admin access:</b> the administrator account is created automatically on first run from
+<span class="mono">ADMIN_USERNAME / ADMIN_EMAIL / ADMIN_PASSWORD</span> in <span class="mono">.env</span>. On the login
+page choose <b>Admin portal</b>. <b>Security reminder:</b> change the current password and MySQL password, and never
+commit <span class="mono">.env</span> to GitHub.</div>
+
+<h2>8. Security hardening included in the final version</h2>
+<ul>
+  <li>CSRF token on every form; logout and notification-read are POST-only.</li>
+  <li>Werkzeug password hashing; parameterised SQL everywhere; role checks on all protected routes.</li>
+  <li>Strong random session key; HttpOnly + SameSite=Lax cookies; optional <span class="mono">SESSION_COOKIE_SECURE</span>.</li>
+  <li>Login throttling, e-mail validation, immediate session revocation on deactivation.</li>
+  <li>Private authenticated image serving, magic-byte upload validation, random filenames, 5 MB limit.</li>
+  <li>Report moderation queue with audit records; LIKE-wildcard escaping; orphan file clean-up.</li>
+</ul>
+
+<div class="footer">Zain University – Campus Connect · Project Report · Generated 20 November 2026 · Flask + MySQL</div>
+</body>
+</html>

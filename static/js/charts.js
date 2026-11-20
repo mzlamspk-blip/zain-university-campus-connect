@@ -1,0 +1,1 @@
+// Chart.js visualizations are initialized on the analytics page using live server data.
