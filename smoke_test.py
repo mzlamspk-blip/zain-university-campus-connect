@@ -3,7 +3,7 @@ import io
 import os
 import uuid
 
-import mysql.connector
+from pymongo import MongoClient
 
 import app as web
 
@@ -17,10 +17,8 @@ png = base64.b64decode(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFAAH/q842iQAAAABJRU5ErkJggg=="
 )
 
-conn = mysql.connector.connect(host=os.getenv("DB_HOST"), port=int(os.getenv("DB_PORT", "3306")),
-                               user=os.getenv("DB_USER"), password=os.getenv("DB_PASSWORD"),
-                               database=os.getenv("DB_NAME"))
-cur = conn.cursor()
+mongo = MongoClient(os.getenv("MONGODB_URI"), serverSelectionTimeoutMS=8000, tz_aware=False)
+db = mongo[os.getenv("MONGODB_DB", "zain_university")]
 
 
 def check(label, response, expected):
@@ -31,8 +29,8 @@ def check(label, response, expected):
 
 
 def student_id_for(user):
-    cur.execute("SELECT id FROM students WHERE username=%s", (user,))
-    return cur.fetchone()[0]
+    doc = db["students"].find_one({"username": user})
+    return str(doc["_id"])
 
 
 check("landing", client.get("/"), 200)
@@ -67,8 +65,9 @@ check("submit complaint with image", client.post("/complaints", data={
     "location": "Campus", "image": (io.BytesIO(png), "photo.png"),
 }, content_type="multipart/form-data"), 302)
 
-cur.execute("SELECT image FROM complaints WHERE student_id=%s ORDER BY id DESC LIMIT 1", (student_id_for(username),))
-image_name = cur.fetchone()[0]
+complaint = db["complaints"].find_one({"student_id": student_id_for(username)},
+                                      sort=[("created_at", -1)])
+image_name = complaint["image"]
 assert image_name and image_name.endswith(".png")
 check("owner can view upload", client.get(f"/media/{image_name}"), 200)
 check("non-existent upload", client.get("/media/does-not-exist.png"), 404)
@@ -104,30 +103,27 @@ check("create event with banner", client.post("/admin/events", data={
     "event_date": "2027-01-01T10:00", "banner": (io.BytesIO(png), "banner.png"),
 }, content_type="multipart/form-data"), 302)
 
-conn.commit()
-cur.execute("SELECT id,banner FROM events WHERE title='Smoke Event' ORDER BY id DESC LIMIT 1")
-event_pk, banner_name = cur.fetchone()
-assert banner_name and banner_name.endswith(".png")
-check("public event banner", client.get(f"/media/events/{banner_name}"), 200)
-check("delete event", client.post(f"/admin/events/{event_pk}/delete"), 302)
-check("deleted banner unavailable", client.get(f"/media/events/{banner_name}"), 404)
+event = db["events"].find_one({"title": "Smoke Event"}, sort=[("created_at", -1)])
+assert event and event.get("banner", "").endswith(".png")
+check("public event banner", client.get(f"/media/events/{event['banner']}"), 200)
+check("delete event", client.post(f"/admin/events/{event['_id']}/delete"), 302)
+check("deleted banner unavailable", client.get(f"/media/events/{event['banner']}"), 404)
 
 student_pk = student_id_for(username)
-cur.execute("UPDATE students SET is_active=0 WHERE id=%s", (student_pk,))
-conn.commit()
+db["students"].update_one({"_id": web.oid(student_pk)}, {"$set": {"is_active": 0}})
 check("deactivate student", client.post(f"/admin/students/{student_pk}/toggle"), 302)
-cur.execute("SELECT is_active FROM students WHERE id=%s", (student_pk,))
-assert cur.fetchone()[0] == 1
-cur.execute("UPDATE students SET is_active=0 WHERE id=%s", (student_pk,))
-conn.commit()
+assert db["students"].find_one({"_id": web.oid(student_pk)})["is_active"] == 1
+db["students"].update_one({"_id": web.oid(student_pk)}, {"$set": {"is_active": 0}})
 check("logout admin", client.post("/logout"), 302)
 check("student login while inactive", client.post("/login", data={
     "identity": username, "password": password, "role": "student",
 }), 200)
 
 for user in (username, other):
-    cur.execute("DELETE FROM students WHERE username=%s", (user,))
-conn.commit()
-cur.close()
-conn.close()
+    doc = db["students"].find_one({"username": user})
+    if doc:
+        db["students"].delete_one({"_id": doc["_id"]})
+db["complaints"].delete_many({"title": {"$in": ["Smoke complaint", "Fake image"]}})
+db["events"].delete_many({"title": "Smoke Event"})
+mongo.close()
 print("ALL SMOKE TESTS PASSED")

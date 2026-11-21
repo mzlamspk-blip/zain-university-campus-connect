@@ -20,11 +20,9 @@ def _load_secret() -> str:
 class Config:
     SECRET_KEY = _load_secret()
 
-    DB_HOST = os.getenv("DB_HOST", "127.0.0.1")
-    DB_PORT = int(os.getenv("DB_PORT", "3306"))
-    DB_USER = os.getenv("DB_USER", "root")
-    DB_PASSWORD = os.getenv("DB_PASSWORD", "")
-    DB_NAME = os.getenv("DB_NAME", "zain_university")
+    # MongoDB (Atlas or local)
+    MONGODB_URI = os.getenv("MONGODB_URI", "")
+    MONGODB_DB = os.getenv("MONGODB_DB", "zain_university")
 
     ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "CHANGE_ME")
     ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "CHANGE_ME")

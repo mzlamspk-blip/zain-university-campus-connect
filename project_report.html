@@ -38,7 +38,7 @@
   <div class="brand">Z</div>
   <h1>Zain University – Campus Connect</h1>
   <div class="subtitle">Project Report: Analysis, Fixes, Technology Stack &amp; Verification</div>
-  <div class="meta">Flask + MySQL University Campus Portal &nbsp;·&nbsp; Report generated: 20 November 2026</div>
+  <div class="meta">Flask + MongoDB (Atlas) University Campus Portal &nbsp;·&nbsp; Report generated: 21 November 2026</div>
 </div>
 
 <h2>1. What this project is</h2>
@@ -66,9 +66,14 @@ respond to complaints and view analytics.</p>
   <tr><td><b>3. Fixing</b></td>
       <td>Corrected every runtime error and the security/functional issues found in the analysis (table 3 below).</td></tr>
   <tr><td><b>4. Verification</b></td>
-      <td>43 automated checks + a live browser login test with real CSRF tokens. <span class="ok">All passed, 0 errors.</span></td></tr>
+      <td>42 automated checks + a live browser login test with real CSRF tokens. <span class="ok">All passed, 0 errors.</span></td></tr>
   <tr><td><b>5. Delivery</b></td>
       <td>Packaged the clean project as <span class="mono">zain-university-final.zip</span> and produced this PDF report.</td></tr>
+  <tr><td><b>6. MongoDB migration</b></td>
+      <td>Rewrote the entire data layer from MySQL to MongoDB Atlas: every query converted from SQL to PyMongo,
+      the relational schema replaced by 12 collections with unique/compound indexes (<span class="mono">mongo_init.py</span>),
+      all templates migrated from integer IDs to MongoDB <span class="mono">_id</span> strings, and
+      <span class="mono">database.sql</span> retired. All 42 checks re-run against MongoDB.</td></tr>
 </table>
 
 <h2>3. Errors found and how they were resolved</h2>
@@ -117,8 +122,12 @@ respond to complaints and view analytics.</p>
   <tr><td><b>Python</b></td><td>3.13.7</td><td>The programming language for the whole backend; runs inside the project's <span class="mono">.venv</span> virtual environment.</td></tr>
   <tr><td><b>Flask</b></td><td>3.1.0</td><td>Web framework – every route in <span class="mono">app.py</span> (40 routes: auth, complaints, events, discussions, admin, media, health).</td></tr>
   <tr><td><b>Flask-WTF / WTForms</b></td><td>1.2.2</td><td>CSRF protection (<span class="mono">CSRFProtect</span>) on every form in the templates.</td></tr>
-  <tr><td><b>mysql-connector-python</b></td><td>9.1.0</td><td>All database access – the <span class="mono">db()</span> and <span class="mono">query()</span> helpers in <span class="mono">app.py</span>.</td></tr>
-  <tr><td><b>MySQL Server</b></td><td>8.0 (service <span class="mono">MySQL80</span>)</td><td>Stores all data: 12 tables defined in <span class="mono">database.sql</span> (students, admins, complaints, events, posts, etc.). Listens on 127.0.0.1:3306.</td></tr>
+  <tr><td><b>pymongo</b></td><td>4.20.1</td><td>All database access – the <span class="mono">db()</span>, <span class="mono">col()</span> and
+      <span class="mono">query()</span>-style helpers in <span class="mono">app.py</span> (find, insert, update, aggregate).</td></tr>
+  <tr><td><b>dnspython</b></td><td>2.9.2</td><td>Resolves MongoDB Atlas <span class="mono">mongodb+srv://</span> connection strings.</td></tr>
+  <tr><td><b>MongoDB Atlas</b></td><td>Cloud (M0 free tier)</td><td>Stores all data: 13 collections (students, admins, complaints,
+      events, posts, comments, notifications, etc.) with indexes created by <span class="mono">mongo_init.py</span>.
+      Cluster <span class="mono">ac-moyf9pq-shard-0*.n56dpqz.mongodb.net:27017</span>.</td></tr>
   <tr><td><b>Werkzeug</b></td><td>3.1.9</td><td>Password hashing (<span class="mono">generate_password_hash</span>/<span class="mono">check_password_hash</span>) and safe upload filenames.</td></tr>
   <tr><td><b>python-dotenv</b></td><td>1.0.1</td><td>Loads configuration from <span class="mono">.env</span> in <span class="mono">config.py</span> (DB credentials, admin account, secret key).</td></tr>
   <tr><td><b>email-validator</b></td><td>2.2.0</td><td>Validates and normalises e-mail addresses in the <span class="mono">/register</span> route.</td></tr>
@@ -137,19 +146,19 @@ respond to complaints and view analytics.</p>
   <tr><th style="width:32%">File / folder</th><th>Purpose</th></tr>
   <tr><td><span class="mono">app.py</span></td><td>All application logic and routes (auth, complaints, lost &amp; found, events, discussions, admin, media, health).</td></tr>
   <tr><td><span class="mono">config.py</span></td><td>Loads <span class="mono">.env</span>; defines DB settings, secret key, upload folder, session cookie security.</td></tr>
-  <tr><td><span class="mono">database.sql</span></td><td>Creates the <span class="mono">zain_university</span> database and all 12 tables with indexes and foreign keys.</td></tr>
+  <tr><td><span class="mono">mongo_init.py</span></td><td>Creates the 12 MongoDB collections and all indexes (idempotent; replaces the old <span class="mono">database.sql</span>).</td></tr>
   <tr><td><span class="mono">requirements.txt</span></td><td>Pinned Python dependencies for <span class="mono">pip install -r</span>.</td></tr>
   <tr><td><span class="mono">.env / .env.example</span></td><td>Secret configuration (DB password, admin account, Flask key). <span class="bad">.env is excluded from the ZIP</span>.</td></tr>
   <tr><td><span class="mono">templates/</span></td><td>21 Jinja templates: public pages, student pages, admin pages, error pages.</td></tr>
   <tr><td><span class="mono">static/css, static/js, static/images</span></td><td>Stylesheets, theme script and static images.</td></tr>
   <tr><td><span class="mono">uploads/</span></td><td>Private image storage served only through the authenticated media routes.</td></tr>
-  <tr><td><span class="mono">smoke_test.py</span></td><td>43-check automated test that proves the application works end to end.</td></tr>
+  <tr><td><span class="mono">smoke_test.py</span></td><td>42-check automated test that proves the application works end to end.</td></tr>
   <tr><td><span class="mono">README.md</span></td><td>Setup, routes, security and troubleshooting documentation.</td></tr>
 </table>
 
 <h2>6. Verification result (final state)</h2>
 <div class="grid">
-  <div class="card"><b>43 / 43</b><br>automated smoke-test checks passed</div>
+  <div class="card"><b>42 / 42</b><br>automated smoke-test checks passed</div>
   <div class="card"><b>0</b><br>errors in code compile, templates and server logs</div>
   <div class="card"><b>200 OK</b><br><span class="mono">/health</span> → database connected</div>
   <div class="card"><b>40</b><br>routes registered and smoke-tested</div>
@@ -165,15 +174,15 @@ event creation/deletion with upload clean-up, and immediate blocking of a deacti
   <li>Create/activate the virtual environment: <span class="mono">python -m venv .venv</span> then
       <span class="mono">.\.venv\Scripts\Activate.ps1</span>.</li>
   <li>Install packages: <span class="mono">pip install -r requirements.txt</span>.</li>
-  <li>Run <span class="mono">database.sql</span> in MySQL Workbench (or <span class="mono">mysql -u root -p &lt; database.sql</span>).</li>
-  <li>Copy <span class="mono">.env.example</span> to <span class="mono">.env</span> and fill in MySQL credentials, admin
+  <li>Create the collections and indexes in MongoDB: <span class="mono">python mongo_init.py</span>.</li>
+  <li>Copy <span class="mono">.env.example</span> to <span class="mono">.env</span> and fill in the MongoDB Atlas connection string, admin
       account and a long random <span class="mono">FLASK_SECRET_KEY</span>.</li>
   <li>Start the site: <span class="mono">python app.py</span> → open <span class="mono">http://127.0.0.1:5000</span>.</li>
-  <li>Optional: run <span class="mono">python smoke_test.py</span> to re-verify all 43 checks.</li>
+  <li>Optional: run <span class="mono">python smoke_test.py</span> to re-verify all 42 checks.</li>
 </ol>
 <div class="note"><b>Admin access:</b> the administrator account is created automatically on first run from
 <span class="mono">ADMIN_USERNAME / ADMIN_EMAIL / ADMIN_PASSWORD</span> in <span class="mono">.env</span>. On the login
-page choose <b>Admin portal</b>. <b>Security reminder:</b> change the current password and MySQL password, and never
+page choose <b>Admin portal</b>. <b>Security reminder:</b> change the current password and the Atlas database password, and never
 commit <span class="mono">.env</span> to GitHub.</div>
 
 <h2>8. Security hardening included in the final version</h2>
@@ -186,6 +195,6 @@ commit <span class="mono">.env</span> to GitHub.</div>
   <li>Report moderation queue with audit records; LIKE-wildcard escaping; orphan file clean-up.</li>
 </ul>
 
-<div class="footer">Zain University – Campus Connect · Project Report · Generated 20 November 2026 · Flask + MySQL</div>
+<div class="footer">Zain University – Campus Connect · Project Report · Generated 21 November 2026 · Flask + MongoDB Atlas</div>
 </body>
 </html>

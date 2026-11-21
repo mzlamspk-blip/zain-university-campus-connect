@@ -1,6 +1,6 @@
 # Zain University – Campus Connect
 
-A Flask + MySQL university campus portal with separate student and administrator access.
+A Flask + MongoDB (Atlas) university campus portal with separate student and administrator access.
 
 ## Features
 - Student registration/login, profile editing and password changes
@@ -10,12 +10,12 @@ A Flask + MySQL university campus portal with separate student and administrator
 - Moderated student discussions, comments, likes and upvotes, with admin report review
 - Notifications for complaint status updates
 - Admin student management, moderation, event management and analytics
-- Chart.js dashboards using MySQL query results
+- Chart.js dashboards calculated from MongoDB aggregation results
 - CSRF protection, password hashing, role checks and upload validation
 
 ## Requirements
 - Python 3.10+
-- MySQL Server 8+
+- A MongoDB database (MongoDB Atlas free tier recommended, or a local MongoDB 7+)
 - VS Code (recommended)
 
 ## Setup in VS Code
@@ -32,18 +32,15 @@ A Flask + MySQL university campus portal with separate student and administrator
    ```bash
    pip install -r requirements.txt
    ```
-5. Create a MySQL database and tables. In MySQL Workbench, open `database.sql` and execute it, or run:
+5. Create the collections and indexes in MongoDB (idempotent):
    ```bash
-   mysql -u root -p < database.sql
+   python mongo_init.py
    ```
-6. Copy `.env.example` to `.env` and fill in your MySQL credentials and a long random Flask secret:
+6. Copy `.env.example` to `.env` and fill in your MongoDB connection string, admin account and a long random Flask secret:
    ```env
    FLASK_SECRET_KEY=use-a-long-random-secret
-   DB_HOST=127.0.0.1
-   DB_PORT=3306
-   DB_USER=root
-   DB_PASSWORD=your_mysql_password
-   DB_NAME=zain_university
+   MONGODB_URI=mongodb+srv://USER:PASSWORD@HOST/DATABASE?retryWrites=true&w=majority
+   MONGODB_DB=zain_university
    ADMIN_USERNAME=your_admin_username
    ADMIN_EMAIL=your_admin_email
    ADMIN_PASSWORD=your_strong_admin_password
@@ -63,12 +60,12 @@ Set `ADMIN_USERNAME`, `ADMIN_EMAIL`, and `ADMIN_PASSWORD` in `.env` before the f
 Images are restricted to PNG, JPG, JPEG, GIF and WEBP and a maximum request size of 5 MB. File signatures are verified, filenames are random, and files are stored in `uploads/` (outside `static/`). Complaint, Lost & Found and post images are served through an authenticated `/media/<filename>` route that only allows the owner or an admin. Event banners are public through `/media/events/<filename>`. For a production deployment, configure private/object storage and malware scanning.
 
 ## Database
-`database.sql` creates the `zain_university` database and all application tables. MySQL credentials are read from `.env`.
+`mongo_init.py` creates the collections and indexes used by the app in the database named by `MONGODB_DB`. The connection string is read from `MONGODB_URI` in `.env` and is also created automatically on first start.
 
 ## Security and production notes
 - Flask-WTF CSRF protection is enabled on all forms; logout and "mark notifications read" are POST-only.
 - Passwords use Werkzeug's secure password hashing; emails are validated on registration.
-- SQL statements use parameterized queries and are compatible with MySQL's `ONLY_FULL_GROUP_BY` mode.
+- All data access goes through PyMongo with filtered queries; search terms are regex-escaped.
 - Admin and student routes are role-protected, and account deactivation takes effect immediately on the next request.
 - Login attempts are throttled per IP/identity (5 failures per 10 minutes in a single process).
 - Debug mode is off by default (`FLASK_DEBUG=1` enables it locally only). Sessions use HttpOnly, SameSite=Lax cookies; set `SESSION_COOKIE_SECURE=1` behind HTTPS.
@@ -77,10 +74,10 @@ Images are restricted to PNG, JPG, JPEG, GIF and WEBP and a maximum request size
 - The password reset feature is not enabled in this offline starter because a secure reset requires an email delivery provider and verified identity flow. Do not implement insecure reset links without one.
 
 ## Troubleshooting
-- `Access denied`: check `DB_USER` and `DB_PASSWORD` in `.env`.
-- `Unknown database`: execute `database.sql`.
+- `Authentication failed`: check the username/password inside `MONGODB_URI` in `.env`.
+- `IP not allowed`: add your IP (or `0.0.0.0/0`) to the MongoDB Atlas Network Access list.
 - `ModuleNotFoundError`: activate `.venv` and run `pip install -r requirements.txt`.
-- `Can't connect to MySQL`: start the MySQL service and verify host/port.
+- `Server selection timed out`: check your internet connection and the Atlas cluster status.
 - `/health` returns database status as JSON.
 
 ## Routes
